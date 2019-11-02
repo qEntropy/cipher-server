@@ -1,4 +1,7 @@
 #include <iostream>
+#include <fstream>
+#include <vector>
+#include <unordered_map>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -9,12 +12,15 @@
 #include <unistd.h>
 
 using namespace std;
+
+unordered_map<string, string> getEmailHashMap(string filename);
 int getServerPortNumber();
 int establishSocket(int portNum);
 int doClientConnectionStuff(int sockfd);
 
 int main(int argc, char *argv[]) {
 
+    unordered_map<string, string> emailHashMap = getEmailHashMap("keys20.txt");
     int portNumber = getServerPortNumber();
     int sockfd = establishSocket(portNumber);
 
@@ -24,6 +30,31 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+/**
+
+**/
+unordered_map<string, string> getEmailHashMap(string filename) {
+    unordered_map<string, string> emailHashMap;
+    ifstream file;
+    file.open(filename);
+    vector<string> vectorPair;
+    if (!file.is_open()) {
+        perror("Error opening file");
+        return emailHashMap;
+    }
+
+    string email, hash;
+    while (file >> email) {
+        file >> hash;
+        emailHashMap.insert(make_pair(email, hash));
+    }
+    file.close();
+    return emailHashMap;
+}
+
+/**
+
+**/
 int getServerPortNumber() {
     int portNumber = -1;
     do {
@@ -32,6 +63,9 @@ int getServerPortNumber() {
     return portNumber;
 }
 
+/**
+
+**/
 int establishSocket(int portNumber) {
     /**
     A socket file descriptor
@@ -80,6 +114,7 @@ int establishSocket(int portNumber) {
     return sockfd;
 }
 
+// TODO: to implement from scratch
 int doClientConnectionStuff(int sockfd) {
 
     //-------------------RPI-SERVER------------------------//
@@ -88,7 +123,7 @@ int doClientConnectionStuff(int sockfd) {
     char buffer[256];
     int n;
 
-
+    // TODO: all this should be in a while(1) loop
     clilen = sizeof(cli_addr);
     newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *) &clilen);
     if (newsockfd < 0)
@@ -102,7 +137,6 @@ int doClientConnectionStuff(int sockfd) {
 
     return 0;
     //-------------------RPI-SERVER------------------------//
-
 }
 
 /** References
