@@ -9,42 +9,16 @@
 #include <unistd.h>
 
 using namespace std;
-
 int getServerPortNumber();
+int establishSocket(int portNum);
 
 int main(int argc, char *argv[]) {
 
     int portNumber = getServerPortNumber();
-    int sockfd = -1;
-
-    /** [1]
-    AF_INET: to specify that we're using Internet address domain
-    SOCK_STREAM: to specify we're using stream socket (TCP)
-    0: OS uses this to use the most appropriate protocol (TCP)
-    **/
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) {
-        cerr << "Error while opening socket\n";
-    }
-
-
-    /**
-    serverAddress: Address of the server
-    cli_addr: address of the client which will connect to this server
-    **/
-    struct sockaddr_in serverAddress, cli_addr;
-    bzero((char *) &serverAddress, sizeof(serverAddress));
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
-    serverAddress.sin_port = htons(portNumber);
-
-    if (bind(sockfd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0)
-        perror("ERROR on binding");
-    listen(sockfd,5);
-
-
+    int sockfd = establishSocket(portNumber);
 
     //-------------------RPI-SERVER------------------------//
+    struct sockaddr_in cli_addr;
     int newsockfd, clilen;
     char buffer[256];
     int n;
@@ -71,6 +45,54 @@ int getServerPortNumber() {
         cout << "Enter server port number: ";
     } while (cin >> portNumber && portNumber < 1024);
     return portNumber;
+}
+
+int establishSocket(int portNumber) {
+    /**
+    A socket file descriptor
+    **/
+    int sockfd = -1;
+
+    /** [1]
+    AF_INET: to specify that we're using Internet address domain
+    SOCK_STREAM: to specify we're using stream socket (TCP)
+    0: OS uses this to use the most appropriate protocol (TCP)
+    **/
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) {
+        cerr << "Error while opening socket\n";
+    }
+
+
+    /**
+    serverAddress: Address of the server
+    **/
+    struct sockaddr_in serverAddress;
+    bzero((char *) &serverAddress, sizeof(serverAddress));
+
+    // address domain family i.e. AF_INET
+    serverAddress.sin_family = AF_INET;
+    // IP address of the server
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
+    // converting integer to network byte order (short)
+    serverAddress.sin_port = htons(portNumber);
+
+    /**
+    binding the socket (sockfd) with the server address
+    **/
+    if (bind(sockfd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0) {
+        close(sockfd);
+        perror("ERROR on binding");
+    }
+
+    /**
+    socket() listening for clients
+    **/
+    if (listen(sockfd, 5) < 0) {
+        perror("Error while listening");
+    }
+
+    return sockfd;
 }
 
 /** References
