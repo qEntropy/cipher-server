@@ -11,30 +11,15 @@
 using namespace std;
 int getServerPortNumber();
 int establishSocket(int portNum);
+int doClientConnectionStuff(int sockfd);
 
 int main(int argc, char *argv[]) {
 
     int portNumber = getServerPortNumber();
     int sockfd = establishSocket(portNumber);
 
-    //-------------------RPI-SERVER------------------------//
-    struct sockaddr_in cli_addr;
-    int newsockfd, clilen;
-    char buffer[256];
-    int n;
-
-
-    clilen = sizeof(cli_addr);
-    newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *) &clilen);
-    if (newsockfd < 0)
-         perror("ERROR on accept");
-    bzero(buffer,256);
-    n = read(newsockfd,buffer,255);
-    if (n < 0) perror("ERROR reading from socket");
-    printf("Here is the message: %s\n",buffer);
-    n = write(newsockfd,"I got your message",18);
-    if (n < 0) perror("ERROR writing to socket");
-    //-------------------RPI-SERVER------------------------//
+    // TODO: to implement from scratch
+    int clientConn =  doClientConnectionStuff(sockfd);
 
     return 0;
 }
@@ -73,7 +58,7 @@ int establishSocket(int portNumber) {
     // address domain family i.e. AF_INET
     serverAddress.sin_family = AF_INET;
     // IP address of the server
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
+    serverAddress.sin_addr.s_addr = INADDR_ANY; //TODO: check if this is correct
     // converting integer to network byte order (short)
     serverAddress.sin_port = htons(portNumber);
 
@@ -95,7 +80,32 @@ int establishSocket(int portNumber) {
     return sockfd;
 }
 
+int doClientConnectionStuff(int sockfd) {
+
+    //-------------------RPI-SERVER------------------------//
+    struct sockaddr_in cli_addr;
+    int newsockfd, clilen;
+    char buffer[256];
+    int n;
+
+
+    clilen = sizeof(cli_addr);
+    newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *) &clilen);
+    if (newsockfd < 0)
+         perror("ERROR on accept");
+    bzero(buffer,256);
+    n = read(newsockfd,buffer,255);
+    if (n < 0) perror("ERROR reading from socket");
+    printf("Here is the message: %s\n",buffer);
+    n = write(newsockfd,"I got your message",18);
+    if (n < 0) perror("ERROR writing to socket");
+
+    return 0;
+    //-------------------RPI-SERVER------------------------//
+
+}
+
 /** References
-[1] http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+[] http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
 
 **/
