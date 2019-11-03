@@ -13,6 +13,7 @@
 
 using namespace std;
 typedef unordered_map<string, string> hashMap;
+typedef unordered_map<string, string>::const_iterator hashMapItr;
 
 unordered_map<string, string> getEmailHashMap(string filename);
 int getServerPortNumber();
@@ -140,12 +141,13 @@ int doClientConnectionStuff(int sockfd, hashMap emailHashMap) {
     string cppBuffer(buffer);
     string myBuffer = cppBuffer.substr(0, cppBuffer.size()-1);
 
-    for (int i = 0; i < myBuffer.size(); ++i) {
-        std::cout << i << " " << myBuffer[i] << endl;
-    }
-    std::cout << "trying to find " << myBuffer << "......\n";
-    if (emailHashMap.find(myBuffer) != emailHashMap.end()) {
-        cout << "found it " << endl;
+    // for (int i = 0; i < myBuffer.size(); ++i) {
+    //     std::cout << i << " " << myBuffer[i] << endl;
+    // }
+
+    hashMapItr itr = emailHashMap.find(myBuffer);
+    if (itr != emailHashMap.end()) {
+        cout << "found the hashValue: " << itr->second << endl;
     }
     else {
         cout << "could NOT find :" << myBuffer << endl;
