@@ -81,7 +81,8 @@ int establishSocket(int portNumber) {
     **/
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        cerr << "Error while opening socket\n";
+        perror("Error while opening socket");
+        return -1;
     }
 
 
@@ -132,15 +133,10 @@ int doClientConnectionStuff(int sockfd, hashMap emailHashMap) {
         if (read(newsockfd, buffer, 1024) < 0)
             perror("ERROR reading from socket");
 
-        // for (int i = 0; i < 14; i++) {
-        //     cout << i << " " << buffer[i] << endl;
-        // }
-        // buffer[strlen(buffer) - 1] = '\0';
-
+        // Converting c string to c++ string
         string cppBuffer(buffer);
-        string emailAddress = cppBuffer.substr(0, cppBuffer.size()-1);
 
-        hashMapItr itr = emailHashMap.find(emailAddress);
+        hashMapItr itr = emailHashMap.find(cppBuffer);
         if (itr != emailHashMap.end()) {
             string hashValue = itr->second;
             int hashValueSize = hashValue.size();
