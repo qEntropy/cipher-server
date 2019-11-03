@@ -15,14 +15,14 @@ using namespace std;
 typedef unordered_map<string, string> hashMap;
 typedef unordered_map<string, string>::const_iterator hashMapItr;
 
-unordered_map<string, string> getEmailHashMap(string filename);
+hashMap getEmailHashMap(string filename);
 int getServerPortNumber();
 int establishSocket(int portNum);
 int doClientConnectionStuff(int sockfd, hashMap emailHashMap);
 
 int main(int argc, char *argv[]) {
 
-    unordered_map<string, string> emailHashMap = getEmailHashMap("keys20.txt");
+    hashMap emailHashMap = getEmailHashMap("keys20.txt");
     int portNumber = getServerPortNumber();
     int sockfd = establishSocket(portNumber);
 
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
 **/
 hashMap getEmailHashMap(string filename) {
-    unordered_map<string, string> emailHashMap;
+    hashMap emailHashMap;
     ifstream file;
     file.open(filename);
     vector<string> vectorPair;
@@ -118,47 +118,45 @@ int establishSocket(int portNumber) {
 // TODO: to implement from scratch
 int doClientConnectionStuff(int sockfd, hashMap emailHashMap) {
 
-    //-------------------RPI------------------------//
     struct sockaddr_in cli_addr;
     int newsockfd, clilen;
-    char buffer[256];
-    int n;
+    char buffer[1024];
 
-    // TODO: all this should be in a while(1) loop
-    clilen = sizeof(cli_addr);
-    newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *) &clilen);
-    if (newsockfd < 0)
-         perror("ERROR on accept");
-    bzero(buffer, 256);
-    n = read(newsockfd, buffer, 256);
-    if (n < 0) perror("ERROR reading from socket");
+    // TODO: all this should be in a while
+    while(true) {
+        clilen = sizeof(cli_addr);
+        newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *) &clilen);
+        if (newsockfd < 0)
+             perror("ERROR on accept");
+        bzero(buffer, 1024);
+        if (read(newsockfd, buffer, 1024) < 0)
+            perror("ERROR reading from socket");
 
-    // for (int i = 0; i < 14; i++) {
-    //     cout << i << " " << buffer[i] << endl;
-    // }
-    // buffer[strlen(buffer) - 1] = '\0';
+        // for (int i = 0; i < 14; i++) {
+        //     cout << i << " " << buffer[i] << endl;
+        // }
+        // buffer[strlen(buffer) - 1] = '\0';
 
-    string cppBuffer(buffer);
-    string myBuffer = cppBuffer.substr(0, cppBuffer.size()-1);
+        string cppBuffer(buffer);
+        string emailAddress = cppBuffer.substr(0, cppBuffer.size()-1);
 
-    // for (int i = 0; i < myBuffer.size(); ++i) {
-    //     std::cout << i << " " << myBuffer[i] << endl;
-    // }
-
-    hashMapItr itr = emailHashMap.find(myBuffer);
-    if (itr != emailHashMap.end()) {
-        cout << "found the hashValue: " << itr->second << endl;
+        hashMapItr itr = emailHashMap.find(emailAddress);
+        if (itr != emailHashMap.end()) {
+            string hashValue = itr->second;
+            int hashValueSize = hashValue.size();
+            if (write(newsockfd, hashValue.c_str(), hashValueSize) < 0) {
+                perror("ERROR writing to the new socket");
+            }
+        }
+        else {
+            string errorMessage = "Could not find that email in the database";
+            int length = errorMessage.size();
+            if (write(newsockfd, errorMessage.c_str(), length) < 0) {
+                perror("Error writing to the new socket");
+            }
+        }
     }
-    else {
-        cout << "could NOT find :" << myBuffer << endl;
-    }
-
-    if(write(newsockfd,"I got your message",18) < 0) {
-        perror("ERROR writing to socket");
-    }
-
     return 0;
-    //-------------------RPI------------------------//
 }
 
 /** References
