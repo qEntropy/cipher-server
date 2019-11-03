@@ -12,11 +12,12 @@
 #include <unistd.h>
 
 using namespace std;
+typedef unordered_map<string, string> hashMap;
 
 unordered_map<string, string> getEmailHashMap(string filename);
 int getServerPortNumber();
 int establishSocket(int portNum);
-int doClientConnectionStuff(int sockfd);
+int doClientConnectionStuff(int sockfd, hashMap emailHashMap);
 
 int main(int argc, char *argv[]) {
 
@@ -25,7 +26,7 @@ int main(int argc, char *argv[]) {
     int sockfd = establishSocket(portNumber);
 
     // TODO: to implement from scratch
-    int clientConn =  doClientConnectionStuff(sockfd);
+    int clientConn =  doClientConnectionStuff(sockfd, emailHashMap);
 
     return 0;
 }
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]) {
 /**
 
 **/
-unordered_map<string, string> getEmailHashMap(string filename) {
+hashMap getEmailHashMap(string filename) {
     unordered_map<string, string> emailHashMap;
     ifstream file;
     file.open(filename);
@@ -87,7 +88,7 @@ int establishSocket(int portNumber) {
     serverAddress: Address of the server
     **/
     struct sockaddr_in serverAddress;
-    bzero((char *) &serverAddress, sizeof(serverAddress));
+    bzero((char *) &serverAddress, sizeof(serverAddress)); // TODO: mem-set
 
     // address domain family i.e. AF_INET
     serverAddress.sin_family = AF_INET;
@@ -110,14 +111,13 @@ int establishSocket(int portNumber) {
     if (listen(sockfd, 5) < 0) {
         perror("Error while listening");
     }
-
     return sockfd;
 }
 
 // TODO: to implement from scratch
-int doClientConnectionStuff(int sockfd) {
+int doClientConnectionStuff(int sockfd, hashMap emailHashMap) {
 
-    //-------------------RPI-SERVER------------------------//
+    //-------------------RPI------------------------//
     struct sockaddr_in cli_addr;
     int newsockfd, clilen;
     char buffer[256];
@@ -128,15 +128,35 @@ int doClientConnectionStuff(int sockfd) {
     newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *) &clilen);
     if (newsockfd < 0)
          perror("ERROR on accept");
-    bzero(buffer,256);
-    n = read(newsockfd,buffer,255);
+    bzero(buffer, 256);
+    n = read(newsockfd, buffer, 256);
     if (n < 0) perror("ERROR reading from socket");
-    printf("Here is the message: %s\n",buffer);
-    n = write(newsockfd,"I got your message",18);
-    if (n < 0) perror("ERROR writing to socket");
+
+    // for (int i = 0; i < 14; i++) {
+    //     cout << i << " " << buffer[i] << endl;
+    // }
+    // buffer[strlen(buffer) - 1] = '\0';
+
+    string cppBuffer(buffer);
+    string myBuffer = cppBuffer.substr(0, cppBuffer.size()-1);
+
+    for (int i = 0; i < myBuffer.size(); ++i) {
+        std::cout << i << " " << myBuffer[i] << endl;
+    }
+    std::cout << "trying to find " << myBuffer << "......\n";
+    if (emailHashMap.find(myBuffer) != emailHashMap.end()) {
+        cout << "found it " << endl;
+    }
+    else {
+        cout << "could NOT find :" << myBuffer << endl;
+    }
+
+    if(write(newsockfd,"I got your message",18) < 0) {
+        perror("ERROR writing to socket");
+    }
 
     return 0;
-    //-------------------RPI-SERVER------------------------//
+    //-------------------RPI------------------------//
 }
 
 /** References
