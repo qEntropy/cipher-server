@@ -25,8 +25,6 @@ int main(int argc, char *argv[]) {
     hashMap emailHashMap = getEmailHashMap("keys20.txt");
     int portNumber = getServerPortNumber();
     int sockfd = establishSocket(portNumber);
-
-    // TODO: to implement from scratch
     int clientConn =  doClientConnectionStuff(sockfd, emailHashMap);
 
     return 0;
@@ -110,28 +108,31 @@ int establishSocket(int portNumber) {
     /**
     socket() listening for clients
     **/
-    if (listen(sockfd, 5) < 0) {
+    if (listen(sockfd, 3) < 0) {
         perror("Error while listening");
     }
     return sockfd;
 }
 
-// TODO: to implement from scratch
+// TODO: change the name of the function
 int doClientConnectionStuff(int sockfd, hashMap emailHashMap) {
 
     struct sockaddr_in cli_addr;
     int newsockfd, clilen;
     char buffer[1024];
 
-    // TODO: all this should be in a while
     while(true) {
         clilen = sizeof(cli_addr);
         newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *) &clilen);
-        if (newsockfd < 0)
+        if (newsockfd < 0) {
              perror("ERROR on accept");
+             exit(EXIT_FAILURE);
+         }
         bzero(buffer, 1024);
-        if (read(newsockfd, buffer, 1024) < 0)
+        if (read(newsockfd, buffer, 1024) < 0) {
             perror("ERROR reading from socket");
+            exit(EXIT_FAILURE);
+        }
 
         // Converting c string to c++ string
         string cppBuffer(buffer);
@@ -151,9 +152,20 @@ int doClientConnectionStuff(int sockfd, hashMap emailHashMap) {
                 perror("Error writing to the new socket");
             }
         }
+
+        close(newsockfd);
     }
     return 0;
 }
+
+
+// string writeToSocket(const int socketfd, string emailOrKey) {
+//
+//     if (socketfd < 0) {
+//          perror("Error while writing to socket");
+//      }
+//
+// }
 
 /** References
 [] http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html

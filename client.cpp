@@ -11,53 +11,35 @@ using namespace std;
 
 int getServerPortNumber();
 string getServerHostName();
+int createServerConnection(int portNumber, string hostName);
+
 
 int main(int argc, char *argv[]) {
 
     int portNumber = getServerPortNumber();
     string hostName = getServerHostName();
-
-    int sockfd, portno, n;
-
-    struct sockaddr_in serverAddress;
-    struct hostent *server;
+    int socketfd = createServerConnection(portNumber, hostName);
 
     string email = "";
     char buffer[1024];
-    portno = portNumber;
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-        perror("ERROR opening socket");
-    server = gethostbyname(hostName.c_str());
 
-    if (server == NULL) {
-        cerr << "ERROR, no such host\n";
-        exit(0);
-    }
-
-    bzero((char *) &serverAddress, sizeof(serverAddress));
-    serverAddress.sin_family = AF_INET;
-    bcopy((char *)server->h_addr, (char *)&serverAddress.sin_addr.s_addr,
-         server->h_length);
-    serverAddress.sin_port = htons(portno);
-    if (connect(sockfd,(struct sockaddr *)&serverAddress,sizeof(serverAddress)) < 0) {
-        perror("ERROR connecting");
-        exit(0);
-    }
-
-    bzero(buffer,1024);
-    printf("Please enter the email: ");
+    cout << "Please enter the email: ";
     cin >> email;
-    n = write(sockfd, email.c_str(), email.size());
-    if (n < 0)
-         perror("ERROR writing to socket");
+    if(write(socketfd, email.c_str(), email.size()) < 0) {
+        perror("Error writing to socket");
+        exit(EXIT_FAILURE);
+    }
+
     bzero(buffer,1024);
-    n = read(sockfd,buffer,1024);
-    if (n < 0)
-         perror("ERROR reading from socket");
-    printf("%s\n",buffer);
+    if (read(socketfd, buffer, 1024) < 0) {
+         perror("Error reading from socket");
+         exit(EXIT_FAILURE);
+     }
+
+    cout << buffer << endl;
     return 0;
 }
+
 
 /**
     prompts the "user" to enter the server's port number
@@ -89,4 +71,71 @@ string getServerHostName() {
     cout << "Enter server host name: ";
     cin >> hostName;
     return hostName;
+}
+
+/**
+    creates a connection to the server
+    if the connection is successful
+    @returns socket file descriptor for you to read and write to
+    @portNumber: port number of server to which client wishes to connect
+    @hostName: localhost or your private IP address for this code
+**/
+int createServerConnection(int portNumber, string hostName) {
+
+    /**
+    Address of the server client wishes to connect
+    **/
+    struct sockaddr_in serverAddress;
+    /**
+    defines a host computer on the internet
+    has a list of address from name server
+    first element of which is aliased to 'h_addr'
+    **/
+    struct hostent *serverInfo;
+
+    /**
+    create a socket for client, which we will connect
+    to the server using 'serverAddress' and 'connect'
+    **/
+    int socketfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (socketfd < 0) {
+        perror("ERROR opening socket");
+        return -1;
+    }
+
+    /**
+    gethostbyname(char* IPv4): takes IPv4 address and
+    returns a pointer to hostnet which has the info on server
+    (host) of that IP address
+    **/
+    serverInfo = gethostbyname(hostName.c_str());
+
+    /**
+    set everything in the serverAddress to zero for now
+    **/
+    bzero((char *) &serverAddress, sizeof(serverAddress));
+
+    /**
+    fill the
+    .sin_family field of the serverAddress = AF_INET (Internet domain)
+    .sin_addr.s_addr field copy from the serverInfo
+    .sin_port = fill portNumber from the user
+    **/
+    serverAddress.sin_family = AF_INET;
+    memcpy((char *)&serverAddress.sin_addr.s_addr,
+    (char *)serverInfo->h_addr,
+    serverInfo->h_length);
+    serverAddress.sin_port = htons(portNumber);
+
+    /**
+    connect to the server using socketfd
+    if not successfull, then exit the program and give an error
+    but if connected then just return socket file descriptor
+    **/
+    if (connect(socketfd,(struct sockaddr *)&serverAddress,sizeof(serverAddress)) < 0) {
+        perror("ERROR connecting");
+        exit(0);
+    }
+
+    return socketfd;
 }
