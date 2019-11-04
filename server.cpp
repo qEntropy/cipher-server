@@ -12,20 +12,21 @@
 #include <unistd.h>
 
 using namespace std;
+#define MAX_BUFFER 1024
 typedef unordered_map<string, string> hashMap;
 typedef unordered_map<string, string>::const_iterator hashMapItr;
 
 hashMap getEmailHashMap(string filename);
 int getServerPortNumber();
 int establishSocket(int portNum);
-int doClientConnectionStuff(int sockfd, hashMap emailHashMap);
+int connectClientAndWrite(int sockfd, hashMap emailHashMap);
 
 int main(int argc, char *argv[]) {
 
     hashMap emailHashMap = getEmailHashMap("keys20.txt");
     int portNumber = getServerPortNumber();
     int sockfd = establishSocket(portNumber);
-    int clientConn =  doClientConnectionStuff(sockfd, emailHashMap);
+    int clientConn =  connectClientAndWrite(sockfd, emailHashMap);
 
     return 0;
 }
@@ -57,9 +58,16 @@ hashMap getEmailHashMap(string filename) {
 **/
 int getServerPortNumber() {
     int portNumber = -1;
-    do {
-        cout << "Enter server port number: ";
-    } while (cin >> portNumber && portNumber < 1024);
+    cout << "Enter server port number: ";
+    cin >> portNumber;
+    if (portNumber < 1024) {
+        perror("Please enter a port number greater than 1024");
+        exit(EXIT_FAILURE);
+    }
+    else if (portNumber > 60000) {
+        perror("Please enter a port number less than 60000");
+        exit(EXIT_FAILURE);
+    }
     return portNumber;
 }
 
@@ -115,11 +123,11 @@ int establishSocket(int portNumber) {
 }
 
 // TODO: change the name of the function
-int doClientConnectionStuff(int sockfd, hashMap emailHashMap) {
+int connectClientAndWrite(int sockfd, hashMap emailHashMap) {
 
     struct sockaddr_in cli_addr;
     int newsockfd, clilen;
-    char buffer[1024];
+    char emailBuffer[MAX_BUFFER];
 
     while(true) {
         clilen = sizeof(cli_addr);
@@ -128,14 +136,14 @@ int doClientConnectionStuff(int sockfd, hashMap emailHashMap) {
              perror("ERROR on accept");
              exit(EXIT_FAILURE);
          }
-        bzero(buffer, 1024);
-        if (read(newsockfd, buffer, 1024) < 0) {
+        bzero(emailBuffer, MAX_BUFFER);
+        if (read(newsockfd, emailBuffer, MAX_BUFFER) < 0) {
             perror("ERROR reading from socket");
             exit(EXIT_FAILURE);
         }
 
         // Converting c string to c++ string
-        string cppBuffer(buffer);
+        string cppBuffer(emailBuffer);
 
         hashMapItr itr = emailHashMap.find(cppBuffer);
         if (itr != emailHashMap.end()) {

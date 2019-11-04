@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 using namespace std;
+#define MAX_BUFFER 1024
 
 int getServerPortNumber();
 string getServerHostName();
@@ -21,7 +22,7 @@ int main(int argc, char *argv[]) {
     int socketfd = createServerConnection(portNumber, hostName);
 
     string email = "";
-    char buffer[1024];
+    char keyBuffer[MAX_BUFFER];
 
     cout << "Please enter the email: ";
     cin >> email;
@@ -30,13 +31,14 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    bzero(buffer,1024);
-    if (read(socketfd, buffer, 1024) < 0) {
+    bzero(keyBuffer, MAX_BUFFER);
+    if (read(socketfd, keyBuffer, MAX_BUFFER) < 0) {
          perror("Error reading from socket");
          exit(EXIT_FAILURE);
      }
 
-    cout << buffer << endl;
+    cout << keyBuffer << endl;
+    close(socketfd);
     return 0;
 }
 
