@@ -141,3 +141,7 @@ int createServerConnection(int portNumber, string hostName) {
 
     return socketfd;
 }
+
+/** References
+[] http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+**/

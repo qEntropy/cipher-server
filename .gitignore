@@ -1,6 +1,7 @@
 # Ignore all files with no extension
 *
 !*.*
+!Makefile
 
 # Compiled Object files
 *.o

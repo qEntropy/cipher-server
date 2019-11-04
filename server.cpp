@@ -25,9 +25,18 @@ int main(int argc, char *argv[]) {
 
     hashMap emailHashMap = getEmailHashMap("keys20.txt");
     int portNumber = getServerPortNumber();
-    int sockfd = establishSocket(portNumber);
-    int clientConn =  connectClientAndWrite(sockfd, emailHashMap);
 
+    int sockfd = establishSocket(portNumber);
+    if (sockfd < 0) {
+        perror("Error: Establishing a socket failed");
+        exit(EXIT_FAILURE);
+    }
+
+    int clientConn =  connectClientAndWrite(sockfd, emailHashMap);
+    if (clientConn < 0) {
+        perror("Connection to client failed");
+        exit(EXIT_FAILURE);
+    }
     return 0;
 }
 
@@ -122,7 +131,6 @@ int establishSocket(int portNumber) {
     return sockfd;
 }
 
-// TODO: change the name of the function
 int connectClientAndWrite(int sockfd, hashMap emailHashMap) {
 
     struct sockaddr_in cli_addr;
@@ -167,15 +175,6 @@ int connectClientAndWrite(int sockfd, hashMap emailHashMap) {
 }
 
 
-// string writeToSocket(const int socketfd, string emailOrKey) {
-//
-//     if (socketfd < 0) {
-//          perror("Error while writing to socket");
-//      }
-//
-// }
-
 /** References
 [] http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
-
 **/
