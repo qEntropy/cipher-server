@@ -19,13 +19,13 @@ int main(int argc, char *argv[]) {
 
     int portNumber = getServerPortNumber();
     string hostName = getServerHostName();
-    int socketfd = createServerConnection(portNumber, hostName);
-
     string email = "";
-    char keyBuffer[MAX_BUFFER];
-
     cout << "Please enter the email: ";
     cin >> email;
+    int socketfd = createServerConnection(portNumber, hostName);
+
+    char keyBuffer[MAX_BUFFER];
+
     if(write(socketfd, email.c_str(), email.size()) < 0) {
         perror("Error writing to socket");
         exit(EXIT_FAILURE);
