@@ -63,7 +63,9 @@ hashMap getEmailHashMap(string filename) {
 }
 
 /**
-
+    gets the port number from the user
+    if port is between 1024 and 60000
+    success else error and stop
 **/
 int getServerPortNumber() {
     int portNumber = -1;
@@ -89,7 +91,7 @@ int establishSocket(int portNumber) {
     **/
     int sockfd = -1;
 
-    /** [1]
+    /**
     AF_INET: to specify that we're using Internet address domain
     SOCK_STREAM: to specify we're using stream socket (TCP)
     0: OS uses this to use the most appropriate protocol (TCP)

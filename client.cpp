@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <cstring>
 
 using namespace std;
 #define MAX_BUFFER 1024
