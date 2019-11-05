@@ -154,6 +154,7 @@ int connectClientAndWrite(int sockfd, hashMap emailHashMap) {
 
         // Converting c string to c++ string
         string cppBuffer(emailBuffer);
+        cout << "Received request for public key of: " << cppBuffer << endl;
 
         hashMapItr itr = emailHashMap.find(cppBuffer);
         if (itr != emailHashMap.end()) {
