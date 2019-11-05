@@ -12,16 +12,15 @@ using namespace std;
 
 int getServerPortNumber();
 string getServerHostName();
+string getEmailAddress();
 int createServerConnection(int portNumber, string hostName);
 
 
 int main(int argc, char *argv[]) {
 
-    int portNumber = getServerPortNumber();
     string hostName = getServerHostName();
-    string email = "";
-    cout << "Please enter the email: ";
-    cin >> email;
+    int portNumber = getServerPortNumber();
+    string email = getEmailAddress();
     int socketfd = createServerConnection(portNumber, hostName);
 
     char keyBuffer[MAX_BUFFER];
@@ -73,6 +72,17 @@ string getServerHostName() {
     cout << "Enter server host name: ";
     cin >> hostName;
     return hostName;
+}
+
+/**
+
+**/
+
+string getEmailAddress() {
+    string emailAddress = "";
+    cout << "Please enter the email address of a user: ";
+    cin >> emailAddress;
+    return emailAddress;
 }
 
 /**

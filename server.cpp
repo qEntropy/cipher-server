@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 
     int clientConn =  connectClientAndWrite(sockfd, emailHashMap);
     if (clientConn < 0) {
-        perror("Connection to client failed");
+        perror("Error: Connection to client failed");
         exit(EXIT_FAILURE);
     }
     return 0;
@@ -67,7 +67,7 @@ hashMap getEmailHashMap(string filename) {
 **/
 int getServerPortNumber() {
     int portNumber = -1;
-    cout << "Enter server port number: ";
+    cout << "Please enter server port number: ";
     cin >> portNumber;
     if (portNumber < 1024) {
         perror("Please enter a port number greater than 1024");
@@ -123,7 +123,7 @@ int establishSocket(int portNumber) {
     }
 
     /**
-    socket() listening for clients
+    socket() listening for clients, max in queue = 3
     **/
     if (listen(sockfd, 3) < 0) {
         perror("Error while listening");
@@ -155,16 +155,19 @@ int connectClientAndWrite(int sockfd, hashMap emailHashMap) {
 
         hashMapItr itr = emailHashMap.find(cppBuffer);
         if (itr != emailHashMap.end()) {
+            string prompt = "The public key of ";
             string hashValue = itr->second;
-            int hashValueSize = hashValue.size();
-            if (write(newsockfd, hashValue.c_str(), hashValueSize) < 0) {
+            string writingString = prompt + cppBuffer + " is " + hashValue;
+            int writingStringSize = writingString.size();
+            if (write(newsockfd, writingString.c_str(), writingStringSize) < 0) {
                 perror("ERROR writing to the new socket");
             }
         }
         else {
-            string errorMessage = "Could not find that email in the database";
-            int length = errorMessage.size();
-            if (write(newsockfd, errorMessage.c_str(), length) < 0) {
+            string errorMessage = "The database had no public key for user ";
+            string writingString = errorMessage + cppBuffer;
+            int length = writingString.size();
+            if (write(newsockfd, writingString.c_str(), length) < 0) {
                 perror("Error writing to the new socket");
             }
         }
