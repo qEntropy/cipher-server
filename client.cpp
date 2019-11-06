@@ -1,12 +1,12 @@
 #include <iostream>
 #include <string>
 #include <stdio.h>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <cstring>
 
 using namespace std;
 #define MAX_BUFFER 1024

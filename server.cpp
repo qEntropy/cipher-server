@@ -23,25 +23,33 @@ int connectClientAndWrite(int sockfd, hashMap emailHashMap);
 
 int main(int argc, char *argv[]) {
 
+    // read file and return a unordered_map {string--->string}
     hashMap emailHashMap = getEmailHashMap("keys20.txt");
+
+    // prompt user for port number
     int portNumber = getServerPortNumber();
 
+    // establishes a socket connection and binds it to the server
     int sockfd = establishSocket(portNumber);
     if (sockfd < 0) {
         perror("Error: Establishing a socket failed");
         exit(EXIT_FAILURE);
     }
 
+    // (loop) part where we connect and write to clients
     int clientConn =  connectClientAndWrite(sockfd, emailHashMap);
     if (clientConn < 0) {
         perror("Error: Connection to client failed");
         exit(EXIT_FAILURE);
     }
+
     return 0;
 }
 
 /**
-
+    @filename: name of the file to read
+    @returns: unordered_map<string, string>
+             {email-->public_key}
 **/
 hashMap getEmailHashMap(string filename) {
     hashMap emailHashMap;
@@ -64,8 +72,8 @@ hashMap getEmailHashMap(string filename) {
 
 /**
     gets the port number from the user
-    if port is between 1024 and 60000
-    success else error and stop
+    if port is between 1024 and 60000: success
+    @returns: port number entered by user
 **/
 int getServerPortNumber() {
     int portNumber = -1;
@@ -83,7 +91,9 @@ int getServerPortNumber() {
 }
 
 /**
-
+    server's socket in the listening state
+    @portNumber: port number entered by user
+    @returns:  socket file desriptor binded to server
 **/
 int establishSocket(int portNumber) {
     /**
@@ -112,7 +122,7 @@ int establishSocket(int portNumber) {
     // address domain family i.e. AF_INET
     serverAddress.sin_family = AF_INET;
     // IP address of the server
-    serverAddress.sin_addr.s_addr = INADDR_ANY; //TODO: check if this is correct
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
     // converting integer to network byte order (short)
     serverAddress.sin_port = htons(portNumber);
 
@@ -133,30 +143,47 @@ int establishSocket(int portNumber) {
     return sockfd;
 }
 
+
+/**
+    @sockfd: socket file descriptor os server
+    @emailHashMap:[map of] email --> key
+    @returns: 0 if everything goes smoothly
+**/
 int connectClientAndWrite(int sockfd, hashMap emailHashMap) {
 
-    struct sockaddr_in cli_addr;
+    struct sockaddr_in clientAddress;
     int newsockfd, clilen;
     char emailBuffer[MAX_BUFFER];
 
     while(true) {
-        clilen = sizeof(cli_addr);
-        newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *) &clilen);
+        clilen = sizeof(clientAddress);
+        /*
+            returns a new socket file descriptor (of client)
+            all the read and writes will be done on this newsockfd
+        */
+        newsockfd = accept(sockfd, (struct sockaddr *) &clientAddress, (socklen_t *) &clilen);
         if (newsockfd < 0) {
-             perror("ERROR on accept");
+             perror("Error on accept");
              exit(EXIT_FAILURE);
          }
+         /*
+            empty the buffer in which we will
+            read the email address received from client
+         */
         bzero(emailBuffer, MAX_BUFFER);
         if (read(newsockfd, emailBuffer, MAX_BUFFER) < 0) {
             perror("ERROR reading from socket");
             exit(EXIT_FAILURE);
         }
 
-        // Converting c string to c++ string
+        /* Converting c string to c++ string */
         string cppBuffer(emailBuffer);
         cout << "Received request for public key of: " << cppBuffer << endl;
 
+        /*  search for the email in the email-Key-HashMap */
         hashMapItr itr = emailHashMap.find(cppBuffer);
+
+        /* if email found then write its 'key' to the client's socket fd*/
         if (itr != emailHashMap.end()) {
             string prompt = "The public key of ";
             string hashValue = itr->second;
@@ -166,6 +193,7 @@ int connectClientAndWrite(int sockfd, hashMap emailHashMap) {
                 perror("ERROR writing to the new socket");
             }
         }
+        /* if email not found then write an error message */
         else {
             string errorMessage = "The database had no public key for user ";
             string writingString = errorMessage + cppBuffer;
@@ -175,12 +203,15 @@ int connectClientAndWrite(int sockfd, hashMap emailHashMap) {
             }
         }
 
+        /* close the socket file descriptor once all the read/wrties are over */
         close(newsockfd);
     }
+
     return 0;
 }
 
 
 /** References
 [] http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+[] https://stackoverflow.com/questions/20372661/read-word-by-word-from-file-in-c
 **/
