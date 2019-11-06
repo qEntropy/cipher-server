@@ -11,27 +11,38 @@
 using namespace std;
 #define MAX_BUFFER 1024
 
-int getServerPortNumber();
 string getServerHostName();
+int getServerPortNumber();
 string getEmailAddress();
 int createServerConnection(int portNumber, string hostName);
 
 
 int main(int argc, char *argv[]) {
 
+    // get hostname ("localhost") from the user
     string hostName = getServerHostName();
+
+    // get portNumber from the user ("9999")
     int portNumber = getServerPortNumber();
+
+    // get the email address from the user ("granch@uh.edu")
     string email = getEmailAddress();
+
+    // connect to the server and return socket file descriptor
     int socketfd = createServerConnection(portNumber, hostName);
 
+    // fixed-size buffer to read the public key requested
     char keyBuffer[MAX_BUFFER];
 
+    // write email to the socket file descriptor
     if(write(socketfd, email.c_str(), email.size()) < 0) {
         perror("Error writing to socket");
         exit(EXIT_FAILURE);
     }
 
-    bzero(keyBuffer, MAX_BUFFER);
+    bzero(keyBuffer, MAX_BUFFER); // empty the fixed size buffer
+
+    // read the public key sent by the server into the buffer
     if (read(socketfd, keyBuffer, MAX_BUFFER) < 0) {
          perror("Error reading from socket");
          exit(EXIT_FAILURE);
@@ -54,17 +65,17 @@ int getServerPortNumber() {
     cin >> portNumber;
     if (portNumber < 1024) {
         perror("Please enter a port number greater than 1024");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     else if (portNumber > 60000) {
         perror("Please enter a port number less than 60000");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     return portNumber;
 }
 
 /**
-    prompts the "user" get the server's name
+    prompts the "user" to get the server's name
     in our case it is localhost
     @returns the entered hostname
 **/
@@ -76,9 +87,10 @@ string getServerHostName() {
 }
 
 /**
-
+    prompts user for to enter the email address
+    for which he/she needs the public key
+    @returns the email address entered by the user
 **/
-
 string getEmailAddress() {
     string emailAddress = "";
     cout << "Please enter the email address of a user: ";
@@ -122,6 +134,10 @@ int createServerConnection(int portNumber, string hostName) {
     (host) of that IP address
     **/
     serverInfo = gethostbyname(hostName.c_str());
+    if (serverInfo == NULL) {
+        perror("Error getting hostname");
+        exit(EXIT_FAILURE);
+    }
 
     /**
     set everything in the serverAddress to zero for now
@@ -131,7 +147,7 @@ int createServerConnection(int portNumber, string hostName) {
     /**
     fill the
     .sin_family field of the serverAddress = AF_INET (Internet domain)
-    .sin_addr.s_addr field copy from the serverInfo
+    .sin_addr.s_addr field copy from the 'serverInfo' struct
     .sin_port = fill portNumber from the user
     **/
     serverAddress.sin_family = AF_INET;
@@ -146,8 +162,8 @@ int createServerConnection(int portNumber, string hostName) {
     but if connected then just return socket file descriptor
     **/
     if (connect(socketfd,(struct sockaddr *)&serverAddress,sizeof(serverAddress)) < 0) {
-        perror("ERROR connecting");
-        exit(0);
+        perror("Error connecting to the server");
+        exit(EXIT_FAILURE);
     }
 
     return socketfd;
@@ -155,4 +171,7 @@ int createServerConnection(int portNumber, string hostName) {
 
 /** References
 [] http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+[] https://stackoverflow.com/questions/33026204/segmentation-fault-when-using-gethostbyname
+[] https://en.cppreference.com/w/cpp/string/byte/memcpy
+[] http://man7.org/linux/man-pages/man3/memcpy.3.html
 **/
