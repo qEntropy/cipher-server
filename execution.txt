@@ -1,0 +1,13 @@
+Step 1: Open Terminal 1
+g++ server.cpp -o server
+./server
+Please enter server port number: 9898
+[]
+
+
+Step 2: Open Terminal 2
+g++ client.cpp -o client
+./client
+Enter server host name: localhost
+Enter server port number: 9898
+Please enter the email address of a user: lwoodrow@uh.edu
