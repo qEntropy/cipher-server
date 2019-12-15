@@ -10,6 +10,8 @@
 
 using namespace std;
 #define MAX_BUFFER 1024
+#define MIN_PORT_NUM 1023
+#define MAX_PORT_NUM 60000
 
 string getServerHostName();
 int getServerPortNumber();
@@ -63,11 +65,11 @@ int getServerPortNumber() {
     int portNumber = -1;
     cout << "Enter server port number: ";
     cin >> portNumber;
-    if (portNumber < 1024) {
-        perror("Please enter a port number greater than 1024");
+    if (portNumber < MIN_PORT_NUM) {
+        perror("Please enter a port number greater than or equal to 1024");
         exit(EXIT_FAILURE);
     }
-    else if (portNumber > 60000) {
+    else if (portNumber > MAX_PORT_NUM) {
         perror("Please enter a port number less than 60000");
         exit(EXIT_FAILURE);
     }
@@ -101,7 +103,7 @@ string getEmailAddress() {
 /**
     creates a connection to the server
     if the connection is successful
-    @returns socket file descriptor for you to read and write to
+    @returns socket file descriptor for you to read and write
     @portNumber: port number of server to which client wishes to connect
     @hostName: localhost or your private IP address for this code
 **/

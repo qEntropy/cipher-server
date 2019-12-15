@@ -1,4 +1,10 @@
-server: server.cpp keys20.txt
-	g++ -Wall -Werror  server.cpp -o server
-client: client.cpp keys20.txt
-	g++ -Wall -Werror  client.cpp -o client
+server: server/server.cpp keys.txt
+	g++ -Wall -Werror  server/server.cpp -o bin/server
+
+client: client/client.cpp keys.txt
+	g++ -Wall -Werror  client/client.cpp -o bin/client
+
+clean: FORCE
+	rm -rf bin/*
+
+FORCE:

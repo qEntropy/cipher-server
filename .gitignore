@@ -1,7 +1,7 @@
-# Ignore all files with no extension
-*
-!*.*
-!Makefile
+# bin directory
+bin/server
+bin/client
+
 
 # Compiled Object files
 *.o
@@ -12,3 +12,12 @@
 *.exe
 *.out
 *.app
+
+#Mac system files
+.DS_store
+
+
+# Ignore all files with no extension
+# *
+# !*.*
+# !Makefile

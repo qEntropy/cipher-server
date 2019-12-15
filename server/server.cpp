@@ -13,6 +13,9 @@
 
 using namespace std;
 #define MAX_BUFFER 1024
+#define MIN_PORT_NUM 1023
+#define MAX_PORT_NUM 60000
+
 typedef unordered_map<string, string> hashMap;
 typedef unordered_map<string, string>::const_iterator hashMapItr;
 
@@ -24,7 +27,7 @@ int connectClientAndWrite(int sockfd, hashMap emailHashMap);
 int main(int argc, char *argv[]) {
 
     // read file and return a unordered_map {string--->string}
-    hashMap emailHashMap = getEmailHashMap("keys20.txt");
+    hashMap emailHashMap = getEmailHashMap("../keys.txt");
 
     // prompt user for port number
     int portNumber = getServerPortNumber();
@@ -79,11 +82,11 @@ int getServerPortNumber() {
     int portNumber = -1;
     cout << "Please enter server port number: ";
     cin >> portNumber;
-    if (portNumber < 1024) {
-        perror("Please enter a port number greater than 1024");
+    if (portNumber < MIN_PORT_NUM) {
+        perror("Please enter a port number greater than or equal to 1024");
         exit(EXIT_FAILURE);
     }
-    else if (portNumber > 60000) {
+    else if (portNumber > MAX_PORT_NUM) {
         perror("Please enter a port number less than 60000");
         exit(EXIT_FAILURE);
     }
@@ -135,7 +138,7 @@ int establishSocket(int portNumber) {
     }
 
     /**
-    socket() listening for clients, max in queue = 3
+    socket() listening for clients
     **/
     if (listen(sockfd, 3) < 0) {
         perror("Error while listening");
