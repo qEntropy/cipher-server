@@ -1,10 +1,15 @@
+CC = g++
+CFLAGS = -Wall -Werror
+
+all: server client
+
 server: server/server.cpp keys.txt
-	g++ -Wall -Werror  server/server.cpp -o bin/server
+	$(CC) $(CFLAGS) server/server.cpp -o bin/server.o
 
 client: client/client.cpp keys.txt
-	g++ -Wall -Werror  client/client.cpp -o bin/client
+	$(CC) $(CFLAGS) client/client.cpp -o bin/client.o
 
-clean: FORCE
-	rm -rf bin/*
+clean:
+	rm  bin/server.o bin/client.o
 
-FORCE:
+.PHONY: all server client clean

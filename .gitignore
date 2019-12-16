@@ -1,6 +1,5 @@
 # bin directory
-bin/server
-bin/client
+bin/
 
 
 # Compiled Object files
